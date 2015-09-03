@@ -264,12 +264,18 @@ def setplot(plotdata):
     plotfigure.kml_xlimits = [132.0, 210.0]
     plotfigure.kml_ylimits = [9.0, 53.0]
 
+
+    cmaps = (geoplot.googleearth_lightblue, geoplot.tsunami_colormap)
+    new_cmap = colormaps.add_colormaps(cmaps, data_limits=[-0.2,0.2],
+                                       data_break=0.0)
+
     def kml_colorbar(filename):
         kml_cmin = -0.2
         kml_cmax = 0.2
         geoplot.kml_build_colorbar(filename,
                                    geoplot.googleearth_transparent,
                                    kml_cmin,kml_cmax)
+
 
     plotfigure.kml_colorbar = kml_colorbar
 
