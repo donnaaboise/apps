@@ -1,11 +1,11 @@
 
-""" 
+"""
 Set up the plot figures, axes, and items to be done for each frame.
 
 This module is imported by the plotting routines and then the
 function setplot is called to set the plot parameters.
-    
-""" 
+
+"""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -20,13 +20,13 @@ except:
 #--------------------------
 def setplot(plotdata):
 #--------------------------
-    
-    """ 
+
+    """
     Specify what is to be plotted at each frame.
     Input:  plotdata, an instance of pyclaw.plotters.data.ClawPlotData.
     Output: a modified version of plotdata.
-    
-    """ 
+
+    """
 
 
     from clawpack.visclaw import colormaps, geoplot
@@ -42,7 +42,17 @@ def setplot(plotdata):
         from clawpack.visclaw import gaugetools
         gaugetools.plot_gauge_locations(current_data.plotdata, \
              gaugenos='all', format_string='ko', add_labels=True)
-    
+
+
+    #-----------------------------------------
+    # Some global kml flags
+    #-----------------------------------------
+    plotdata.kml_name = "Chile 2010"
+    plotdata.kml_starttime = [2010,2,27,6,34,0]  # Time of event in UTC [None]
+    plotdata.kml_tz_offset = 3    # Time zone offset (in hours) of event. [None]
+
+    plotdata.kml_index_fname = "Chile_2010"  # name for .kmz and .kml files ["_GoogleEarth"]
+    plotdata.kml_publish = 'http://math.boisestate.edu/~calhoun/visclaw/GoogleEarth/kmz/'
 
     #-----------------------------------------
     # Figure for surface
@@ -94,7 +104,7 @@ def setplot(plotdata):
     plotitem.contour_levels = linspace(-3000,-3000,1)
     plotitem.amr_contour_colors = ['y']  # color on each level
     plotitem.kwargs = {'linestyles':'solid','linewidths':2}
-    plotitem.amr_contour_show = [1,0,0]  
+    plotitem.amr_contour_show = [1,0,0]
     plotitem.celledges_show = 0
     plotitem.patchedges_show = 0
 
@@ -127,13 +137,13 @@ def setplot(plotdata):
         eta = q[3,:]
         topo = eta - h
         return topo
-        
+
     plotitem.plot_var = gaugetopo
     plotitem.plotstyle = 'g-'
 
     def add_zeroline(current_data):
         from pylab import plot, legend, xticks, floor, axis, xlabel
-        t = current_data.t 
+        t = current_data.t
         gaugeno = current_data.gaugeno
 
         if gaugeno == 32412:
@@ -151,16 +161,60 @@ def setplot(plotdata):
     plotaxes.afteraxes = add_zeroline
 
 
+        #-----------------------------------------------------------
+    # Figure for KML files
+    # This is a very limited set of items that can
+    # be controlled.
+    #----------------------------------------------------------
+    plotfigure = plotdata.new_plotfigure(name='Sea Surface',figno=1)
+    plotfigure.show = True
+
+    plotfigure.use_for_kml = True
+    plotfigure.kml_use_for_initial_view = True
+
+    # These override axes limits set below in plotitems
+    plotfigure.kml_xlimits = [-120,-60]
+    plotfigure.kml_ylimits = [-60, 0.0];
+
+    # Resolution
+    plotfigure.kml_dpi = 400
+    plotfigure.kml_tile_images = True    # Tile images for faster loading.  Requires GDAL [False]
+
+    # Set up for axes in this figure:
+    plotaxes = plotfigure.new_plotaxes('kml')
+    plotaxes.scaled = True
+
+    # Water
+    plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
+    plotitem.plot_var = geoplot.surface_or_depth
+    plotitem.pcolor_cmap = geoplot.googleearth_transparent
+    #plotitem.pcolor_cmap = geoplot.googleearth_lightblue
+    plotitem.add_colorbar = True
+    plotitem.pcolor_cmin = -0.2  # ignored?
+    plotitem.pcolor_cmax = 0.2
+    plotitem.amr_celledges_show = [0,0,0]
+    plotitem.patchedges_show = 0
+
+    def kml_colorbar(filename):
+        cmin = -0.2
+        cmax = 0.2
+        geoplot.kml_build_colorbar(filename,
+                                   geoplot.googleearth_transparent,
+                                   cmin,cmax)
+
+    plotfigure.kml_colorbar = kml_colorbar
+
+
     #-----------------------------------------
     # Figures for fgmax - max values on fixed grids
     #-----------------------------------------
-    otherfigure = plotdata.new_otherfigure(name='max amplitude and arrival times', 
+    otherfigure = plotdata.new_otherfigure(name='max amplitude and arrival times',
                     fname='amplitude_times.png')
 
 
 
     #-----------------------------------------
-    
+
     # Parameters used only when creating html and/or latex hardcopy
     # e.g., via pyclaw.plotters.frametools.printframes:
 
@@ -168,7 +222,7 @@ def setplot(plotdata):
     plotdata.print_format = 'png'            # file format
     plotdata.print_framenos = 'all'          # list of frames to print
     plotdata.print_gaugenos = 'all'          # list of gauges to print
-    plotdata.print_fignos = 'all'            # list of figures to print
+    plotdata.print_fignos = [1,300]            # list of figures to print
     plotdata.html = True                     # create html files of plots?
     plotdata.html_homelink = '../README.html'   # pointer for top of index
     plotdata.latex = True                    # create latex file of plots?
@@ -177,4 +231,3 @@ def setplot(plotdata):
     plotdata.latex_makepdf = False           # also run pdflatex?
 
     return plotdata
-

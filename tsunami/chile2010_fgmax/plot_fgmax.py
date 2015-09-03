@@ -25,9 +25,10 @@ def plot_fgmax_grid():
     # plot arrival time contours and label:
     arrival_t = fg.arrival_time/3600.  # arrival time in hours
     clines_t = numpy.linspace(0,8,17)  # hours
-    clines_t_label = clines_t[::2]  # which ones to label 
-    clines_t_colors = [.5,.5,.5]
-    con_t = plt.contour(fg.X,fg.Y,arrival_t, clines_t,colors=clines_t_colors) 
+    clines_t_label = clines_t[::2]  # which ones to label
+    # clines_t_colors = [.5,.5,.5]
+    clines_t_colors = "0.5"
+    con_t = plt.contour(fg.X,fg.Y,arrival_t, clines_t,colors=clines_t_colors)
     plt.clabel(con_t, clines_t_label)
 
     # fix axes:
@@ -41,7 +42,7 @@ if __name__=="__main__":
     import os
     plot_fgmax_grid()
     plotdir = '_plots'
-    if not os.path.isdir(plotdir): 
+    if not os.path.isdir(plotdir):
         os.mkdir(plotdir)
     fname = os.path.join(plotdir, "amplitude_times.png")
     plt.savefig(fname)
